@@ -29,27 +29,32 @@ void setup()
 }
 
 rgb_color hexToRgb(char *hexColor){
-  byte r, g, b;
-  char rHex[2], gHex[2], bHex[2];
-  //strncpy(rHex, hexColor, 2); // copy 2 characters from hexColor
-  strncpy(gHex, hexColor+2, 0);
-  strncpy(bHex, hexColor+4, 0);
+    byte r, g, b;
+    char rgbHex[2]; 
+    strncpy(rgbHex, hexColor, 2); // copy 2 characters from hexColor
+    r = hexToDec(rgbHex);
+    strncpy(rgbHex, hexColor+2, 2);
+    g = hexToDec(rgbHex);
+    strncpy(rgbHex, hexColor+4, 2);
+    b = hexToDec(rgbHex);
+  //strncpy(gHex, hexColor+2, 0);
+  //strncpy(bHex, hexColor+4, 0);
   //char gHex[2] = {hexColor[2], hexColor[3]};
   //char bHex[2] = {hexColor[4], hexColor[5]};
   //r = hexrToDec(rHex);
   //g = hexrToDec(gHex);
   //b = hexrToDec(bHex);
   
-  //Serial.println(rHex);
-  Serial.println(gHex);
-  Serial.println(bHex);
+  Serial.println(r);
+  Serial.println(g);
+  Serial.println(b);
   //r = strtol(hexColor[0,1], 0, 16);
  
   return (rgb_color){r, g, b};
 }
 
 
-byte hexToDec(char *s) // opt
+byte hexToDec(char *s) // opt // źle zamienia. 
 {
   int x = 0;
   for(;;) {
