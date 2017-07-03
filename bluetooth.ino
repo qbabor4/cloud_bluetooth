@@ -1,13 +1,15 @@
 /*
  * Bluetooth controled program, to comunicate cloud with Android app
- * Reciving data via bluetooth with end-marker '>' like a2b1b4>
- *
+ * Reciving data via bluetooth 
+ * Data is read by 6 chars 
  * 
 */
 
 //TODO
 // dostac caly hex string i dopiero wtedy coś robic (end marker)
 // zobaczyc czy zamiana z hex na dec zajmuje duzo wiecej czasu od wysyłąnia w dec
+// sprawdzic czy lepiej inkrementwac zmianna itam pod index tablicy dawac znak czy robic na stringu i +=
+// inkcementowac i jak jest 6, to koniec ( bez koncowego znaku
 
 #include <PololuLedStrip.h>
 // Create an ledStrip object and specify the pin it will use.
@@ -28,6 +30,8 @@ const char endMarker = '>';
 //const byte numChars = 32;
 //char receivedData[numChars]; // array of data
 
+byte gotChars = 0; // how many chars program have read; App sends 6 chars long data
+
 void setup()
 {
     Serial.begin(9600);   //Sets the baud for serial data transmission                               
@@ -35,26 +39,26 @@ void setup()
 }
 void loop()
 {
-      if ( Serial.available() > 0 ) {     // Get data only when you receive data:
-          char c = Serial.read();        //Read the incoming data & store into c
-                    
-          if ( c ==  endMarker ){
-            Serial.print( receivedData );          
-            Serial.print("\n");
-            Serial.print("\n");
-            digitalWrite(13, HIGH);
+  
+    if ( Serial.available() > 0 ) {     // Get data only when you receive data
+        gotChars += 1;
+        char c = Serial.read();        //Read the incoming data & store into c
+        
+        if ( gotChars ==  7 ){
+          Serial.print( receivedData );          
+          Serial.print("\n");
+          gotChars = 0;
+          //digitalWrite(13, HIGH);
             
             // tu wszystko zmianiać
             // podłączyć pasek rgb
             // zobaczyc czy działa
             // zamiana hex na rgb
-            // progres
-             
-            receivedData = "";
-          } 
-          else {
+            // progres      
+          receivedData = "";
+        } 
+        else {
             receivedData += c;
-          }
-   }
-  
+        }
+    }
 }
