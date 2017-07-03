@@ -24,6 +24,7 @@ byte red, green, blue;
 #define LED_COUNT 21 // numbers of leds + 1
 
 String receivedData = "";
+const char endMarker = '>'; 
 //const byte numChars = 32;
 //char receivedData[numChars]; // array of data
 
@@ -36,14 +37,23 @@ void loop()
 {
       if ( Serial.available() > 0 ) {     // Get data only when you receive data:
           char c = Serial.read();        //Read the incoming data & store into c
-          receivedData += c;
-           
-          if ( c == '>' ){
+                    
+          if ( c ==  endMarker ){
             Serial.print( receivedData );          
             Serial.print("\n");
             Serial.print("\n");
-            digitalWrite(13, HIGH); 
+            digitalWrite(13, HIGH);
+            
+            // tu wszystko zmianiać
+            // podłączyć pasek rgb
+            // zobaczyc czy działa
+            // zamiana hex na rgb
+            // progres
+             
             receivedData = "";
+          } 
+          else {
+            receivedData += c;
           }
    }
   
