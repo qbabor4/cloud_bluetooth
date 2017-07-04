@@ -8,13 +8,15 @@
 //TODO
 // zobaczyc czy zamiana z hex na dec zajmuje duzo wiecej czasu od wysyłąnia w dec
 // zamiana z hex na 3 bajty
+// moze jak sie dopisuje 0 to czasami ma byc z przodu... ????
+// mryganie przy wiekszej ilości danych na raz ( jak sie jeździ palcem po kółku
 
 #include <PololuLedStrip.h>
 // Create an ledStrip object and specify the pin it will use.
 PololuLedStrip<6> ledStrip;
 
 // Create a buffer for holding the colors (3 bytes per color). example: [255,255,255]
-#define LED_COUNT 21 // numbers of leds + 1
+#define LED_COUNT 20 // numbers of leds 
 
 rgb_color colors[LED_COUNT]; // holds structures of color
 rgb_color color;  // structure of 3 variables: red, green, blue
@@ -26,10 +28,11 @@ void setup()
 {
     Serial.begin(9600);   //Sets the baud for serial data transmission                               
     pinMode(13, OUTPUT);  //Sets digital pin 13 as output pin
+    digitalWrite(10, HIGH);
 }
 
 rgb_color hexToRgb(char *hexColor){
-    byte r, g, b;
+    uint8_t r, g, b;
     char rgbHex[2]; 
     strncpy(rgbHex, hexColor, 2); // copy 2 characters from hexColor
     r = hexToDec(rgbHex);
@@ -54,7 +57,7 @@ rgb_color hexToRgb(char *hexColor){
 }
 
 
-byte hexToDec(char *s) // opt // źle zamienia. 
+byte hexToDec(char *s) // opt // źle zamienia. // to zrobić
 {
   int x = 0;
   for(;;) {
@@ -70,7 +73,15 @@ byte hexToDec(char *s) // opt // źle zamienia.
    else break;
    s++;
  }
- return (byte)x;
+ return (uint8_t)x;
+}
+
+void sendToDiodes(rgb_color color){
+  for ( uint16_t i = 0; i < LED_COUNT; i++ ){
+    colors[i] = color;
+  }
+  ledStrip.write(colors,LED_COUNT);
+  delay(10);
 }
 
 void loop()
@@ -88,7 +99,7 @@ void loop()
           // zamianic tego strigna na 3 kolory w strukturze i w petli wpisaca wszystko 
           // do tablicy kolorów
           
-          colors[0] = hexToRgb(receivedData);
+          sendToDiodes( hexToRgb(receivedData) );
           //digitalWrite(13, HIGH);
             
             // tu wszystko zmianiać
