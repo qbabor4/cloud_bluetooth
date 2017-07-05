@@ -8,8 +8,13 @@
 //TODO
 // zobaczyc czy zamiana z hex na dec zajmuje duzo wiecej czasu od wysyłąnia w dec
 // zamiana z hex na 3 bajty
-// moze jak sie dopisuje 0 to czasami ma byc z przodu... ????
-// mryganie przy wiekszej ilości danych na raz ( jak sie jeździ palcem po kółku
+// mryganie przy wiekszej ilości danych na raz ( jak sie jeździ palcem po kółku )
+// najwyzej poczatkowy i koncowy znacznik
+
+// dostawanie danych ze znacznikiem poczatkowym i koncowym
+// jak nie jest 6 to nic nie robić  
+///!!!!!!!!!!!!!!!!!!!!
+
 
 #include <PololuLedStrip.h>
 // Create an ledStrip object and specify the pin it will use.
