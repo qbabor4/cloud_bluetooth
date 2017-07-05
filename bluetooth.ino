@@ -27,7 +27,9 @@ rgb_color colors[LED_COUNT]; // holds structures of color
 rgb_color color;  // structure of 3 variables: red, green, blue
 
 char receivedData[6]; // received data from bluetooth
-byte gotChars = 0; // how many chars program have read; App sends 6-chars-long data
+byte gotHexNumbers = 0; // how many chars program have read; App sends 6-chars-long data
+boolean startSavingData = false; // saves data only when true ( between # and > )
+
 
 void setup()
 {
@@ -53,9 +55,9 @@ rgb_color hexToRgb(char *hexColor){
   //g = hexrToDec(gHex);
   //b = hexrToDec(bHex);
   
-  Serial.println(r);
-  Serial.println(g);
-  Serial.println(b);
+  //Serial.println(r);
+  //Serial.println(g);
+  //Serial.println(b);
   //r = strtol(hexColor[0,1], 0, 16);
  
   return (rgb_color){r, g, b};
@@ -94,30 +96,31 @@ void loop()
   
     if ( Serial.available() > 0 ) {     // Get data only when you receive data     
         char c = Serial.read();        //Read the incoming data & store into c
-        
-        if ( gotChars ==  5 ){ 
+        if (c == '#'){
+          startSavingData = true;
+        } else if ( c == '>' ){
+          // moze wywalić nadpisywac znowu pierwsze kolory i łączyc poprzedni kolor z tym teraz
+          // długosc musiałaby byc 6 ( String i konkatenacja? )
+          startSavingData = false;
+          gotHexNumbers = 0;
+          sendToDiodes( hexToRgb(receivedData) );
+        } else {
+          if (startSavingData){
+             receivedData[ gotHexNumbers ] = c;
+             gotHexNumbers += 1;
+          }
+        }
+        /*if ( gotChars ==  5 ){ 
           receivedData[gotChars] = c;
           Serial.println( receivedData );          
           //Serial.print("\n");
           gotChars = 0;
-
-          // zamianic tego strigna na 3 kolory w strukturze i w petli wpisaca wszystko 
-          // do tablicy kolorów
-          
-          sendToDiodes( hexToRgb(receivedData) );
-          //digitalWrite(13, HIGH);
-            
-            // tu wszystko zmianiać
-            // podłączyć pasek rgb
-            // zobaczyc czy działa
-            // zamiana hex na rgb
-            // progres      
-          
+          sendToDiodes( hexToRgb(receivedData) );          
         } 
         else {
             receivedData[gotChars] = c;
             gotChars += 1;
-        }
+        } */
 
          
     }
