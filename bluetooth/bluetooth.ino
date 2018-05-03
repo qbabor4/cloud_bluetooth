@@ -1,33 +1,26 @@
 /*
- * Bluetooth controled program, to comunicate cloud with Android app
+ * Bluetooth program, to comunicate cloud with Android app
  * Reciving data via bluetooth 
- * Data is read by 6 chars 
- * 
 */
 
 //TODO
 // zobaczyc czy zamiana z hex na dec zajmuje duzo wiecej czasu od wysyłąnia w dec
-// jak nie jest 6 to nic nie robić  
 
 
 #include <PololuLedStrip.h>
-// Create an ledStrip object and specify the pin it will use.
+/* Create an ledStrip object and specify the pin it will use. */
 PololuLedStrip<6> ledStrip;
 
-// Create a buffer for holding the colors (3 bytes per color). example: [255,255,255]
+/* Create a buffer for holding the colors (3 bytes per color). example: [255,255,255] */
 #define LED_COUNT 20 // numbers of leds 
 
 rgb_color colors[LED_COUNT]; // holds structures of color
 rgb_color color;  // structure of 3 variables: red, green, blue
 
-//char receivedData[6]; // received data from bluetooth
-//byte gotHexNumbers = 0; // how many chars program have read; App sends 6-chars-long data
-//boolean gotSTARTchar = false; // saves data only when true ( between # and > )
-
 
 void setup(){
-    Serial.begin(9600);   //Sets the baud for serial data transmission                               
-    pinMode(13, OUTPUT);  //Sets digital pin 13 as output pin
+    Serial.begin(9600);                                
+    pinMode(13, OUTPUT); 
     digitalWrite(10, HIGH);
 }
 
@@ -73,16 +66,28 @@ void sendToDiodes(rgb_color color){
 
 char START = '<';
 char END = '>';
-char RAINBOW[4] = "rbw";
-char COLOR[4] = "col";
 char SEPARATOR = '#';
+char RAINBOW[] = "rbw"; // sprawdzic czy z 3 będzie ok TODO
+char COLOR[] = "col";
+char RAINBOW_MODE[] = "mod";
+char BRIGHTNESS[] = "bgh";
 
-char commandChars[3];
-boolean gotSEPARATOR = false;
+char commandChars[4];
 byte gotCommandChars = 0;
-char colorChars[6];
+
+char colorChars[7];
 byte gotColorChars = 0;
+
+char commandCharsIn[4];
+byte gotCommandCharsIn = 0;
+ 
+char rainbowModeChar;
+char brightnessArray[4]; 
+byte gotBrightnessChars = 0;
+
 boolean gotSTART = false;
+boolean gotSEPARATOR = false;
+
 
 rgb_color hsvToRgb(uint16_t h, uint8_t s, uint8_t v)
 {
@@ -115,67 +120,105 @@ void rainbow(byte brightness, boolean allTheSame=false){
   delay(10);
 }
 
+// polecenie <rbw> zrąbało program TODO moze gotStart dawac na false jak else
+
 void loop(){
-  if ( Serial.available() > 0 ) {     // Get data only when you receive data     
-      char c = Serial.read();        //Read the incoming data & store into c
-      Serial.println(c);
+  if ( Serial.available() > 0 ) { /* Read data only when you receive data */  
+      char c = Serial.read();        
+//      Serial.println(c);
       if (gotSTART){
-        /* reads command */
-        if (!gotSEPARATOR){
-          if(c != SEPARATOR){ // moze sie da z while i tu cztac 
-//            Serial.println("NO SEPARATOR");
-              commandChars[gotCommandChars] = c;
-              gotCommandChars++; // moze trzeba tak jak receivedData[ gotHexNumbers ] = c;
-          } else {
-//            Serial.println("GOT SEPARATOR ELSE");
-            gotSEPARATOR = true;
-            gotCommandChars = 0;
-          }    
-        } else {
-//          Serial.println("GOT SEPARATOR");
-          // got whole command 
-//          Serial.println(commandChars);
+//        Serial.println("Start");
+        if (gotSEPARATOR){ 
+//          Serial.println("Separator");
+//          Serial.println(commandChars); // to jest prawie caly czas col
+//          Serial.println("st");
+//          Serial.println(strcmp(commandChars,COLOR));
+//          Serial.println("en");
 //          Serial.println(COLOR);
           if (strcmp(commandChars,COLOR) == 0){
-//              Serial.println("COLOR");
+//            Serial.println("COLOR");
               if ( c == END ){
+//                Serial.println("COLOR_END");
                 gotSTART = false;
                 gotColorChars = 0;
                 gotSEPARATOR = false;
-//                Serial.println("WYSYLAM");
                 sendToDiodes( hexToRgb(colorChars) );
-//                colorChars = {};
-//                commandChars = {};
               } else {
                 colorChars[gotColorChars] = c;
                 gotColorChars++;
               }
-              // czytać kolor do END
           } else if (strcmp(commandChars, RAINBOW) == 0) {
-            Serial.println("RAINBOW");
-              // rainbow puścić 
-              gotSTART = false;
-              gotColorChars = 0;
-              gotSEPARATOR = false;
-//              colorChars = {};
-//              commandChars = {};
-              while(Serial.available() == 0){
-                rainbow(255);
+//              Serial.println("RAINBOW");
+              if ( c == END ){
+                gotSTART = false;
+                gotColorChars = 0;
+                gotSEPARATOR = false;
+                gotBrightnessChars = 0;
+                gotCommandCharsIn = 0;
+                gotCommandChars = 0;
+                
+                int rainbowMode = (int)rainbowModeChar - 48;
+                if (rainbowMode == 0 || rainbowMode == 1){
+                  int brightness = atoi(brightnessArray);
+                  while(Serial.available() == 0){
+                    rainbow(brightness, rainbowMode);
+                  }
+                }
+              } else {
+                if(gotCommandCharsIn < 3){ 
+                /* reads commands after main command */
+                  commandCharsIn[gotCommandCharsIn] = c;
+                  gotCommandCharsIn++; 
+                } else {
+                  if (strcmp(commandCharsIn, RAINBOW_MODE) == 0){
+                    if (c != SEPARATOR){
+                      rainbowModeChar = c;
+                    } else {
+                      gotCommandCharsIn = 0;
+                    }
+                  } else if (strcmp(commandCharsIn, BRIGHTNESS) == 0){
+                    if(c != SEPARATOR){ 
+                      /* reads brightness command */
+                      brightnessArray[gotBrightnessChars] = c;
+                      gotBrightnessChars++; 
+                    } else {
+                      gotBrightnessChars = 0;
+                    }  
+                  } else {
+                    /* something failed and we didn't get correct message*/
+                    gotSTART = false;
+                    gotColorChars = 0;
+                    gotSEPARATOR = false;
+                    gotBrightnessChars = 0;
+                    gotCommandCharsIn = 0;
+                    gotCommandChars = 0;
+                    // zrąbało się 
+                  }
+                }  
               }
-//                sendToDiodes( hexToRgb(receivedData) ); // rainbow dać TODO
           } else {
-            Serial.println(commandChars);
-            Serial.println(RAINBOW);
-            // jak sie spiepszyło coś 
+            /* something failed and we didn't get correct message*/
             gotSTART = false;
             gotColorChars = 0;
+            // czyścić tablice TODO
             gotSEPARATOR = false;
+            gotCommandChars = 0;
           }
-        }
+        } else {
+          if(c != SEPARATOR){ 
+            /* reads first command */
+            commandChars[gotCommandChars] = c;
+//            Serial.println(commandChars);
+            gotCommandChars++; 
+          } else {
+            gotSEPARATOR = true;
+            gotCommandChars = 0;
+          }  
+        }   
       } else {
         if(c == START){
-        gotSTART = true;
+          gotSTART = true;
         }
       }
-  }
+   }
 }
