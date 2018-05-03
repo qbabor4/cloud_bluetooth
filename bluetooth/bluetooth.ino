@@ -67,7 +67,7 @@ void sendToDiodes(rgb_color color){
 char START = '<';
 char END = '>';
 char SEPARATOR = '#';
-char RAINBOW[] = "rbw"; // sprawdzic czy z 3 będzie ok TODO
+char RAINBOW[] = "rbw";
 char COLOR[] = "col";
 char RAINBOW_MODE[] = "mod";
 char BRIGHTNESS[] = "bgh";
@@ -127,18 +127,9 @@ void loop(){
       char c = Serial.read();        
 //      Serial.println(c);
       if (gotSTART){
-//        Serial.println("Start");
         if (gotSEPARATOR){ 
-//          Serial.println("Separator");
-//          Serial.println(commandChars); // to jest prawie caly czas col
-//          Serial.println("st");
-//          Serial.println(strcmp(commandChars,COLOR));
-//          Serial.println("en");
-//          Serial.println(COLOR);
           if (strcmp(commandChars,COLOR) == 0){
-//            Serial.println("COLOR");
               if ( c == END ){
-//                Serial.println("COLOR_END");
                 gotSTART = false;
                 gotColorChars = 0;
                 gotSEPARATOR = false;
@@ -148,7 +139,6 @@ void loop(){
                 gotColorChars++;
               }
           } else if (strcmp(commandChars, RAINBOW) == 0) {
-//              Serial.println("RAINBOW");
               if ( c == END ){
                 gotSTART = false;
                 gotColorChars = 0;
@@ -160,8 +150,9 @@ void loop(){
                 int rainbowMode = (int)rainbowModeChar - 48;
                 if (rainbowMode == 0 || rainbowMode == 1){
                   int brightness = atoi(brightnessArray);
+                  boolean rainbowModeBool = (rainbowMode == 0) ? (true) : (false);
                   while(Serial.available() == 0){
-                    rainbow(brightness, rainbowMode);
+                    rainbow(brightness, rainbowModeBool);
                   }
                 }
               } else {
@@ -192,7 +183,8 @@ void loop(){
                     gotBrightnessChars = 0;
                     gotCommandCharsIn = 0;
                     gotCommandChars = 0;
-                    // zrąbało się 
+                    // wyzerowac tablice TODO
+                    // inaczej zerować zmienne TODO (mniej) 
                   }
                 }  
               }
