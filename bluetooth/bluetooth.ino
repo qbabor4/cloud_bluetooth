@@ -154,6 +154,7 @@ void loop(){
                   while(Serial.available() == 0){
                     rainbow(brightness, rainbowModeBool);
                   }
+                  memset(brightnessArray, 0, 4);
                 }
               } else {
                 if(gotCommandCharsIn < 3){ 
